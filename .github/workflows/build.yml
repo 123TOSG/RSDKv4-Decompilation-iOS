@@ -79,8 +79,12 @@ jobs:
           submodules: recursive
       - name: Build RSDKv4 iOS Xcode Project
         run: |
+          # Automatically detect the first available scheme in the project
+          SCHEME=$(xcodebuild -project "RSDKv4 ios.xcodeproj" -list | grep -A 1 "Schemes:" | tail -n 1 | xargs)
+          echo "Using discovered scheme: $SCHEME"
+          
           xcodebuild -project "RSDKv4 ios.xcodeproj" \
-                     -scheme "RSDKv4 ios" \
+                     -scheme "$SCHEME" \
                      -sdk iphoneos \
                      -configuration Release \
                      -derivedDataPath build \
