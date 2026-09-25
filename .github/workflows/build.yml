@@ -1,6 +1,7 @@
 name: Build RSDKv4
 
 on:
+  workflow_dispatch: # <--- This adds the manual "Run workflow" button!
   push:
     paths:
       - android/**
