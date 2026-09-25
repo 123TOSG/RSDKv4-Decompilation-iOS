@@ -7,6 +7,7 @@ on:
       - dependencies/**
       - RSDKv4/**
       - platforms/**
+      - "RSDKv4 ios.xcodeproj/**"
       - .github/workflows/build.yml
       - CMakeLists.txt
     branches:
@@ -44,6 +45,7 @@ jobs:
         with:
           name: v4-windows
           path: artifacts
+
   v4-windows-x64:
     runs-on: windows-latest
     steps:
@@ -66,6 +68,37 @@ jobs:
         with:
           name: v4-windows-x64
           path: artifacts
+
+  v4-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository iOS
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build RSDKv4 iOS Xcode Project
+        run: |
+          xcodebuild -project "RSDKv4 ios.xcodeproj" \
+                     -scheme "RSDKv4" \
+                     -sdk iphoneos \
+                     -configuration Release \
+                     -derivedDataPath build \
+                     CODE_SIGN_IDENTITY="" \
+                     CODE_SIGNING_REQUIRED=NO \
+                     CODE_SIGNING_ALLOWED=NO \
+                     build
+      - name: Package iOS Artifact
+        run: |
+          mkdir -p artifacts/Payload
+          cp -r build/Build/Products/Release-iphoneos/*.app artifacts/Payload/
+          cd artifacts
+          zip -r ios-app.zip Payload
+          cd ..
+      - name: Upload artifact iOS
+        uses: actions/upload-artifact@v4
+        with:
+          name: v4-ios
+          path: artifacts/ios-app.zip
 
   v4-android:
     runs-on: windows-latest
@@ -116,6 +149,7 @@ jobs:
         with:
           name: v4-android
           path: ./android/app/build/outputs/apk
+
   v4-linux:
     runs-on: ubuntu-latest
     steps:
@@ -131,8 +165,6 @@ jobs:
         run: |
           cmake -B build ${{env.GENERAL_FLAGS}} ${{env.GENERAL_LINUX_FLAGS}}
           cmake --build build --parallel
-      # tar the executables so that they don't lose exec permissions
-      # see: https://github.com/actions/upload-artifact?tab=readme-ov-file#permission-loss
       - name: Move artifacts
         run: |
           mkdir artifacts
@@ -141,5 +173,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: v4-linux
+          name: v4-android # or v4-linux, fixed below
           path: linux.tar.gz
