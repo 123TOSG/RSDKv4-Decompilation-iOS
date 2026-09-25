@@ -77,6 +77,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+      - name: Create placeholder Data.rsdk
+        run: |
+          mkdir -p dependencies/ios
+          touch dependencies/ios/Data.rsdk
       - name: Build RSDKv4 iOS Xcode Project
         run: |
           # Automatically detect the first available scheme in the project
